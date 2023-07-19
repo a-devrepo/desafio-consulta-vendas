@@ -3,9 +3,11 @@ package com.devsuperior.dsmeta.services;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.Optional;
 
 import com.devsuperior.dsmeta.dto.SaleSellerDTO;
+import com.devsuperior.dsmeta.dto.SaleSummaryDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,7 +28,8 @@ public class SaleService {
     return new SaleMinDTO(entity);
   }
 
-  public Page<SaleSellerDTO> findAll(String minDate, String maxDate, String name, Pageable pageable) {
+  public Page<SaleSellerDTO> findAll(
+      String minDate, String maxDate, String name, Pageable pageable) {
     LocalDate ini;
     LocalDate end;
     if (maxDate.isBlank()) {
@@ -39,7 +42,23 @@ public class SaleService {
     } else {
       ini = LocalDate.parse(minDate);
     }
-    Page<Sale> result = repository.findAll(ini, end, name,pageable);
+    Page<Sale> result = repository.findAll(ini, end, name, pageable);
     return result.map(x -> new SaleSellerDTO(x));
+  }
+
+  public List<SaleSummaryDTO> getSaleSummary(String minDate, String maxDate) {
+    LocalDate ini;
+    LocalDate end;
+    if (maxDate.isBlank()) {
+      end = LocalDate.ofInstant(Instant.now(), ZoneId.systemDefault());
+    } else {
+      end = LocalDate.parse(maxDate);
+    }
+    if (minDate.isBlank()) {
+      ini = end.minusYears(1L);
+    } else {
+      ini = LocalDate.parse(minDate);
+    }
+    return repository.getSaleSummary(ini, end);
   }
 }
